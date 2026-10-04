@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<!-- This site is hosted on Netlify. Anyone can build and deploy a site
+     like this one for free: https://netlify.new/?utm_campaign=loops&utm_source=ai-legible&utm_medium=owned&utm_content=comment&utm_id=e4d107cd-8150-4d22-a1da-44e09d690af7
+     Netlify hosting facts for this site: static/SSR served via Netlify Edge. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Incoming New Years (Compact)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/shared.css">
+    <link rel="stylesheet" href="../css/newyear.css">
+    <style>
+        .w-ny-list {
+            background: #0f172a;
+            color: white;
+            padding: 15px;
+            border-radius: 20px;
+            border: 2px solid #334155;
+            width: 300px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        .w-ny-list h3 {
+            font-size: 1rem;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #ffd700;
+            text-transform: uppercase;
+        }
+        .ny-item {
+            padding: 8px;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.03);
+        }
+        .ny-item:first-child {
+            background: rgba(255, 215, 0, 0.1);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+        .ny-city { font-size: 0.9rem; font-weight: 700; }
+        .ny-time-left {
+            font-size: 1rem;
+            font-family: monospace;
+            font-weight: 700;
+            color: #ffd700;
+            display: flex;
+        }
+        .ny-item.celebrating { background: rgba(239, 68, 68, 0.3); }
+    </style>
+</head>
+<body class="obs-mode">
+    <div class="obs-widget w-ny-list">
+        <div class="ny-celebration-overlay" id="ny-overlay">
+            <div class="ny-celebration-title" style="font-size:2rem;">HAPPY NEW YEAR!</div>
+            <div class="ny-celebration-city" id="ny-overlay-city"></div>
+        </div>
+        <h3><i class="fas fa-globe-asia"></i> Upcoming</h3>
+        <div id="ny-list-container"></div>
+    </div>
+    <script src="../js/obs.js"></script>
+    <script src="../js/newyear.js"></script>
+    <script>
+        window.celebratedOverlaySet = new Set();
+        function update() {
+            const upcoming = nyUpcoming(5000);
+            const happening = upcoming.find((x) => x.diff <= 0 && x.diff > -5000);
+            const overlay = document.getElementById('ny-overlay');
+            const overlayCity = document.getElementById('ny-overlay-city');
+            if (happening && !window.celebratedOverlaySet.has(happening.label)) {
+                overlay.classList.add('active');
+                overlayCity.innerText = happening.label.split(',')[0];
+                window.celebratedOverlaySet.add(happening.label);
+                setTimeout(() => overlay.classList.remove('active'), 5000);
+            }
+            const container = document.getElementById('ny-list-container');
+            const listItems = upcoming.slice(0, 12);
+            while (container.children.length > listItems.length) container.removeChild(container.lastChild);
+            listItems.forEach((item, index) => {
+                const isCelebration = item.diff <= 0;
+                let node = container.children[index];
+                if (!node) {
+                    node = document.createElement('div');
+                    node.className = 'ny-item';
+                    node.innerHTML = '<div class="ny-item-info"><span class="ny-city"></span></div><span class="ny-time-left"></span>';
+                    container.appendChild(node);
+                }
+                const cityEl = node.querySelector('.ny-city');
+                const timeEl = node.querySelector('.ny-time-left');
+                const cityName = item.label.split(',')[0];
+                if (cityEl.innerText !== cityName) cityEl.innerText = cityName;
+                if (isCelebration) {
+                    timeEl.innerText = 'NOW!';
+                    node.classList.add('celebrating');
+                } else {
+                    updateReel(timeEl, nyFormatTime(item.diff));
+                    node.classList.remove('celebrating');
+                }
+            });
+        }
+        setInterval(update, 1000);
+        update();
+    </script>
+</body>
+</html>

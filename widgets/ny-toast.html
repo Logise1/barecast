@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<!-- This site is hosted on Netlify. Anyone can build and deploy a site
+     like this one for free: https://netlify.new/?utm_campaign=loops&utm_source=ai-legible&utm_medium=owned&utm_content=comment&utm_id=e4d107cd-8150-4d22-a1da-44e09d690af7
+     Netlify hosting facts for this site: static/SSR served via Netlify Edge. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Celebration Toast</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/shared.css">
+    <style>
+        .w-ny-toast {
+            background: rgba(15, 23, 42, 0.95);
+            border: 2px solid #ffd700;
+            border-radius: 20px;
+            padding: 20px 40px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            color: white;
+            box-shadow: 0 0 50px rgba(255, 215, 0, 0.3);
+            min-width: 450px;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            animation: none;
+        }
+        .w-ny-toast.show { transform: translateY(0); opacity: 1; }
+        .toast-icon { font-size: 4rem; color: #ffd700; }
+        .toast-content { display: flex; flex-direction: column; align-items: flex-start; gap: 5px; }
+        .toast-header-row { display: flex; align-items: center; gap: 15px; }
+        .toast-header-row h2 {
+            margin: 0; font-size: 2.8rem; line-height: 1; text-transform: uppercase;
+            color: white; text-shadow: 0 2px 0 #000; font-weight: 800;
+        }
+        .toast-header-row i { font-size: 2.5rem; color: #87ceeb; }
+        .toast-content p {
+            margin: 0; font-size: 1.4rem; color: #ffd700; font-weight: 800;
+            text-transform: uppercase; letter-spacing: 2px;
+        }
+    </style>
+</head>
+<body class="obs-mode">
+    <div id="widget-ny_toast" class="obs-widget w-ny-toast">
+        <div class="toast-icon"><i class="fas fa-glass-cheers"></i></div>
+        <div class="toast-content">
+            <div class="toast-header-row">
+                <h2 id="ny-toast-header">UP NEXT</h2>
+                <i id="ny-toast-icon-status" class="fas fa-hourglass-half"></i>
+            </div>
+            <p id="ny-toast-city">Loading...</p>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="../js/obs.js"></script>
+    <script src="../js/newyear.js"></script>
+    <script>
+        const widget = document.getElementById('widget-ny_toast');
+        const cityEl = document.getElementById('ny-toast-city');
+        const headerEl = document.getElementById('ny-toast-header');
+        const statusIcon = document.getElementById('ny-toast-icon-status');
+        widget.classList.add('show');
+        const celebrated = new Set();
+        function check() {
+            const upcoming = nyUpcoming(60000);
+            const active = upcoming.find((tz) => tz.diff <= 0 && tz.diff > -60000);
+            const next = upcoming.filter((tz) => tz.diff > 0)[0];
+            if (active) {
+                headerEl.innerText = 'HAPPY NEW YEAR!';
+                statusIcon.className = 'fas fa-glass-cheers';
+                statusIcon.style.color = '#ffd700';
+                cityEl.innerText = active.label;
+                if (!celebrated.has(active.label)) {
+                    celebrated.add(active.label);
+                    if (window.confetti) confetti({ particleCount: 150, spread: 80, origin: { y: 0.8 }, colors: ['#ffd700', '#ffffff'] });
+                }
+            } else if (next) {
+                headerEl.innerText = 'UP NEXT';
+                statusIcon.className = 'fas fa-hourglass-half';
+                statusIcon.style.color = '#87ceeb';
+                cityEl.innerText = next.label;
+            }
+        }
+        setInterval(check, 1000);
+        check();
+    </script>
+</body>
+</html>

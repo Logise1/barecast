@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<!-- This site is hosted on Netlify. Anyone can build and deploy a site
+     like this one for free: https://netlify.new/?utm_campaign=loops&utm_source=ai-legible&utm_medium=owned&utm_content=comment&utm_id=e4d107cd-8150-4d22-a1da-44e09d690af7
+     Netlify hosting facts for this site: static/SSR served via Netlify Edge. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Poll</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/shared.css">
+    <style>
+        .w-poll {
+            width: min(420px, 94vw);
+            background: rgba(15, 23, 42, 0.92);
+            color: #fff;
+            border: 3px solid #ffd700;
+            border-radius: 20px;
+            padding: 22px;
+        }
+        h2 { margin: 0 0 6px; font-size: 1.4rem; }
+        .hint { color: #94a3b8; font-size: 0.85rem; margin-bottom: 16px; }
+        .opt { margin-bottom: 12px; }
+        .opt-top { display: flex; justify-content: space-between; font-weight: 800; margin-bottom: 6px; }
+        .bar { height: 14px; background: #1e293b; border-radius: 99px; overflow: hidden; }
+        .fill { height: 100%; width: 0; background: linear-gradient(90deg, #D42426, #ffd700); transition: width 0.35s; }
+        .key { color: #ffd700; margin-right: 8px; }
+    </style>
+</head>
+<body class="obs-mode">
+    <div class="obs-widget w-poll">
+        <h2 id="question">Chat Poll</h2>
+        <p class="hint" id="hint">Type 1, 2, 3 or 4 in chat to vote.</p>
+        <div id="options"></div>
+    </div>
+    <script src="../js/obs.js"></script>
+    <script src="../js/chat.js"></script>
+    <script>
+        const videoId = requireParam('videoId');
+        const question = qs('question', 'Chat Poll');
+        const labels = [qs('option1', 'Yes'), qs('option2', 'No'), qs('option3'), qs('option4')].filter(Boolean);
+        document.getElementById('question').textContent = question;
+        document.getElementById('hint').textContent = `Type 1–${labels.length} to vote, another number to change, or 0 to remove your vote.`;
+
+        const votes = new Map();
+        const counts = labels.map(() => 0);
+        const box = document.getElementById('options');
+        const fills = [];
+        const totals = [];
+
+        labels.forEach((label, i) => {
+            const row = document.createElement('div');
+            row.className = 'opt';
+            row.innerHTML = `<div class="opt-top"><span><span class="key">${i + 1}</span>${label}</span><span class="count">0</span></div><div class="bar"><div class="fill"></div></div>`;
+            box.appendChild(row);
+            fills.push(row.querySelector('.fill'));
+            totals.push(row.querySelector('.count'));
+        });
+
+        function render() {
+            const total = counts.reduce((a, b) => a + b, 0);
+            counts.forEach((n, i) => {
+                totals[i].textContent = n + (total ? ` (${Math.round(n / total * 100)}%)` : '');
+                fills[i].style.width = total ? `${(n / total) * 100}%` : '0%';
+            });
+        }
+
+        function choiceFrom(text) {
+            const raw = chatNorm(text);
+            const num = raw.replace(/^!/, '');
+            if (num === '0') return 'clear';
+            if (/^[1-4]$/.test(num)) {
+                const idx = parseInt(num, 10) - 1;
+                return idx < labels.length ? idx : -1;
+            }
+            return labels.findIndex((label) => chatNorm(label) === raw);
+        }
+
+        connectYouTubeChat(videoId, {
+            onMessage(msg) {
+                const voter = msg.author?.channel_id || msg.author?.name;
+                if (!voter) return;
+                if (chatMediaUrl(msg.message)) return;
+                const idx = choiceFrom(msg.message);
+                if (idx === -1) return;
+
+                const prev = votes.get(voter);
+                if (idx === 'clear') {
+                    if (prev === undefined) return;
+                    counts[prev] -= 1;
+                    votes.delete(voter);
+                    render();
+                    return;
+                }
+
+                if (prev === idx) return;
+                if (prev !== undefined) counts[prev] -= 1;
+                votes.set(voter, idx);
+                counts[idx] += 1;
+                render();
+            }
+        });
+        render();
+    </script>
+</body>
+</html>

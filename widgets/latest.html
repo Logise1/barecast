@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<!-- This site is hosted on Netlify. Anyone can build and deploy a site
+     like this one for free: https://netlify.new/?utm_campaign=loops&utm_source=ai-legible&utm_medium=owned&utm_content=comment&utm_id=e4d107cd-8150-4d22-a1da-44e09d690af7
+     Netlify hosting facts for this site: static/SSR served via Netlify Edge. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Latest Video</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/shared.css">
+    <style>
+        .w-latest {
+            background: white;
+            padding: 15px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            max-width: 500px;
+            border: 2px solid #e2e8f0;
+        }
+        .w-latest img {
+            width: 140px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 12px;
+        }
+        .w-latest-info h4 {
+            color: var(--primary-color);
+            font-size: 0.8em;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        .w-latest-info h3 {
+            font-size: 1.1em;
+            line-height: 1.2;
+            margin: 0;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body class="obs-mode">
+    <div class="obs-widget w-latest">
+        <img id="lv-thumb" src="" alt="Thumbnail" referrerpolicy="no-referrer">
+        <div class="w-latest-info">
+            <h4><i class="fab fa-youtube"></i> New Video</h4>
+            <h3 id="lv-title">Loading...</h3>
+        </div>
+    </div>
+    <script src="../js/obs.js"></script>
+    <script>
+        const channelId = requireParam('channelId');
+        const rssUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent('https://www.youtube.com/feeds/videos.xml?channel_id=' + channelId)}`;
+
+        function applyVideo(videoId, title) {
+            if (!videoId) return;
+            document.getElementById('lv-thumb').src = `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`;
+            document.getElementById('lv-title').innerText = title || 'Latest Video';
+        }
+
+        async function fetchLatest() {
+            try {
+                const response = await fetch(rssUrl);
+                const data = await response.json();
+                const item = data?.items?.[0];
+                if (!item) return;
+                const match = (item.link || '').match(/[?&]v=([^&]+)/) || (item.guid || '').match(/:([^:]+)$/);
+                const videoId = match ? match[1] : '';
+                applyVideo(videoId, item.title);
+            } catch (e) { console.error(e); }
+        }
+        fetchLatest();
+        setInterval(fetchLatest, 60000);
+    </script>
+</body>
+</html>

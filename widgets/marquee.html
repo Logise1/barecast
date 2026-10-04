@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<!-- This site is hosted on Netlify. Anyone can build and deploy a site
+     like this one for free: https://netlify.new/?utm_campaign=loops&utm_source=ai-legible&utm_medium=owned&utm_content=comment&utm_id=e4d107cd-8150-4d22-a1da-44e09d690af7
+     Netlify hosting facts for this site: static/SSR served via Netlify Edge. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scrolling Text</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Lobster&family=Montserrat:wght@700;800&family=Outfit:wght@400;700;800&family=Pacifico&family=Rubik:wght@700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/shared.css">
+    <style>
+        body.obs-mode {
+            align-items: flex-end;
+            justify-content: stretch;
+        }
+        .w-marquee {
+            width: 100%;
+            padding: 15px 0;
+            overflow: hidden;
+            white-space: nowrap;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            border-top: 4px solid var(--tech-gold);
+        }
+        .track {
+            display: inline-flex;
+            align-items: center;
+            gap: 4rem;
+            will-change: transform;
+        }
+        .track span {
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            flex-shrink: 0;
+        }
+        .track.loop {
+            animation-name: marquee-loop;
+            animation-timing-function: linear;
+            animation-iteration-count: infinite;
+        }
+        .track.once {
+            animation-name: marquee-once;
+            animation-timing-function: linear;
+            animation-iteration-count: 1;
+            animation-fill-mode: forwards;
+        }
+        @keyframes marquee-loop {
+            from { transform: translateX(0); }
+            to { transform: translateX(-50%); }
+        }
+        @keyframes marquee-once {
+            from { transform: translateX(100vw); }
+            to { transform: translateX(-100%); }
+        }
+    </style>
+</head>
+<body class="obs-mode">
+    <div class="obs-widget w-marquee" id="marquee">
+        <div class="track loop" id="track"></div>
+    </div>
+    <script src="../js/obs.js"></script>
+    <script>
+        const fonts = {
+            outfit: '"Outfit", sans-serif',
+            lobster: '"Lobster", cursive',
+            montserrat: '"Montserrat", sans-serif',
+            bebas: '"Bebas Neue", sans-serif',
+            pacifico: '"Pacifico", cursive',
+            rubik: '"Rubik", sans-serif'
+        };
+        const speeds = { slow: '28s', medium: '15s', fast: '8s', turbo: '4s' };
+
+        const text = qs('text', 'Welcome to the Stream! • Subscribe!');
+        const textColor = qs('textColor', '#ffffff');
+        const bgColor = qs('bgColor', '#D42426');
+        const borderColor = qs('borderColor', '#FFD700');
+        const font = fonts[qs('font', 'outfit')] || fonts.outfit;
+        const duration = speeds[qs('speed', 'medium')] || speeds.medium;
+        const repeat = qs('repeat', 'yes') !== 'no';
+
+        const bar = document.getElementById('marquee');
+        const track = document.getElementById('track');
+        bar.style.background = bgColor;
+        bar.style.color = textColor;
+        bar.style.borderTopColor = borderColor;
+        bar.style.fontFamily = font;
+        track.style.animationDuration = duration;
+        track.className = 'track ' + (repeat ? 'loop' : 'once');
+
+        const copies = repeat ? 2 : 1;
+        for (let i = 0; i < copies; i++) {
+            const span = document.createElement('span');
+            span.textContent = text;
+            if (font.includes('Lobster') || font.includes('Pacifico')) {
+                span.style.textTransform = 'none';
+                span.style.fontWeight = '400';
+            }
+            track.appendChild(span);
+        }
+    </script>
+</body>
+</html>

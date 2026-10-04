@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<!-- This site is hosted on Netlify. Anyone can build and deploy a site
+     like this one for free: https://netlify.new/?utm_campaign=loops&utm_source=ai-legible&utm_medium=owned&utm_content=comment&utm_id=e4d107cd-8150-4d22-a1da-44e09d690af7
+     Netlify hosting facts for this site: static/SSR served via Netlify Edge. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Onscreen Effects</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@800&display=swap" rel="stylesheet">
+    <style>
+        html, body {
+            margin: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: transparent !important;
+        }
+        body.obs-mode {
+            display: block;
+            min-height: 100vh;
+            background: transparent !important;
+        }
+        #fx {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 9999;
+            overflow: hidden;
+        }
+        .bit {
+            position: absolute;
+            top: -10%;
+            left: 0;
+            font-size: 28px;
+            line-height: 1;
+            will-change: transform, opacity;
+            animation: fall linear forwards;
+            text-shadow: 0 4px 10px rgba(0,0,0,0.25);
+        }
+        .bit.spin { animation-name: fall-spin; }
+        @keyframes fall {
+            from { transform: translate3d(0, -10vh, 0); opacity: 1; }
+            to { transform: translate3d(var(--dx, 0px), 110vh, 0); opacity: 0.85; }
+        }
+        @keyframes fall-spin {
+            from { transform: translate3d(0, -10vh, 0) rotate(0deg); opacity: 1; }
+            to { transform: translate3d(var(--dx, 40px), 110vh, 0) rotate(360deg); opacity: 0.8; }
+        }
+        .rocket {
+            position: absolute;
+            bottom: -40px;
+            font-size: 36px;
+            animation: launch 1.1s ease-out forwards;
+        }
+        @keyframes launch {
+            to { transform: translateY(-75vh); opacity: 0; }
+        }
+        .flash {
+            position: absolute;
+            inset: 0;
+            background: #fff;
+            opacity: 0;
+            animation: flash 0.45s ease-out forwards;
+        }
+        @keyframes flash {
+            0% { opacity: 0.85; }
+            100% { opacity: 0; }
+        }
+        .ring {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border: 4px solid #ffd700;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            animation: boom 0.7s ease-out forwards;
+        }
+        @keyframes boom {
+            to { width: 280px; height: 280px; opacity: 0; }
+        }
+        .banner {
+            position: absolute;
+            left: 50%;
+            top: 18%;
+            transform: translateX(-50%) scale(0.6);
+            font-family: Outfit, sans-serif;
+            font-weight: 800;
+            font-size: 4.5rem;
+            color: #fff;
+            text-shadow: 0 6px 0 #000, 0 0 24px rgba(255,215,0,0.8);
+            animation: pop 1.8s ease-out forwards;
+            white-space: nowrap;
+        }
+        @keyframes pop {
+            20% { transform: translateX(-50%) scale(1); opacity: 1; }
+            100% { transform: translateX(-50%) scale(1.1); opacity: 0; }
+        }
+    </style>
+</head>
+<body class="obs-mode">
+    <div id="fx"></div>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="../js/obs.js"></script>
+    <script src="../js/chat.js"></script>
+    <script>
+        const videoId = requireParam('videoId');
+        const cooldown = Math.max(0, parseInt(qs('cooldown', '4'), 10) || 4) * 1000;
+        const who = qs('who', 'everyone');
+        const fx = document.getElementById('fx');
+        const lastUse = new Map();
+
+        function allowed(author = {}) {
+            if (who === 'mods') return !!(author.moderator || author.owner);
+            return true;
+        }
+
+        function spawn(el, life) {
+            fx.appendChild(el);
+            setTimeout(() => el.remove(), life);
+        }
+
+        function rain(chars, count, opts = {}) {
+            for (let i = 0; i < count; i++) {
+                const el = document.createElement('div');
+                el.className = 'bit' + (opts.spin ? ' spin' : '');
+                el.textContent = chars[i % chars.length];
+                el.style.left = Math.random() * 100 + 'vw';
+                el.style.fontSize = (opts.size || (18 + Math.random() * 22)) + 'px';
+                el.style.setProperty('--dx', (Math.random() * 120 - 60) + 'px');
+                el.style.animationDuration = (opts.dur || (3 + Math.random() * 3.5)) + 's';
+                el.style.animationDelay = (Math.random() * 0.8) + 's';
+                spawn(el, 8000);
+            }
+        }
+
+        function burstConfetti(extra = {}) {
+            if (!window.confetti) return;
+            confetti({ particleCount: 120, spread: 80, origin: { y: 0.7 }, ...extra });
+        }
+
+        function fireworks() {
+            for (let i = 0; i < 6; i++) {
+                const r = document.createElement('div');
+                r.className = 'rocket';
+                r.textContent = '🚀';
+                r.style.left = (10 + Math.random() * 80) + 'vw';
+                r.style.animationDelay = (i * 0.12) + 's';
+                spawn(r, 1600);
+            }
+            if (!window.confetti) return;
+            const end = Date.now() + 1800;
+            (function frame() {
+                confetti({ particleCount: 4, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#ff0000', '#ffd700', '#ffffff'] });
+                confetti({ particleCount: 4, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#ff0000', '#ffd700', '#ffffff'] });
+                confetti({ particleCount: 18, spread: 360, startVelocity: 28, origin: { x: Math.random(), y: Math.random() * 0.45 } });
+                if (Date.now() < end) requestAnimationFrame(frame);
+            }());
+        }
+
+        function lightning() {
+            spawn(Object.assign(document.createElement('div'), { className: 'flash' }), 500);
+            setTimeout(() => spawn(Object.assign(document.createElement('div'), { className: 'flash' }), 400), 180);
+        }
+
+        function explode() {
+            const ring = document.createElement('div');
+            ring.className = 'ring';
+            ring.style.left = (30 + Math.random() * 40) + 'vw';
+            ring.style.top = (30 + Math.random() * 30) + 'vh';
+            spawn(ring, 800);
+            burstConfetti({ particleCount: 160, spread: 360, startVelocity: 45, origin: { y: 0.5 } });
+        }
+
+        function banner(text) {
+            const el = document.createElement('div');
+            el.className = 'banner';
+            el.textContent = text;
+            spawn(el, 2000);
+        }
+
+        const EFFECTS = {
+            '!firework': fireworks,
+            '!fireworks': fireworks,
+            '!confetti': () => burstConfetti({ particleCount: 180, spread: 90 }),
+            '!snow': () => rain(['❄', '❅', '❆', '•'], 55, { dur: 6, size: 16 }),
+            '!hearts': () => rain(['❤️', '💖', '💗', '💕'], 36, { spin: true }),
+            '!heart': () => rain(['❤️', '💖', '💗', '💕'], 36, { spin: true }),
+            '!love': () => rain(['❤️', '😍', '💘'], 40, { spin: true }),
+            '!rain': () => rain(['💧', '💦'], 70, { dur: 2.2, size: 14 }),
+            '!stars': () => rain(['⭐', '✨', '🌟'], 40, { spin: true }),
+            '!sparkle': () => rain(['✨', '🌟'], 45, { spin: true }),
+            '!sparkles': () => rain(['✨', '🌟'], 45, { spin: true }),
+            '!bubbles': () => rain(['🫧', '⚪'], 40, { dur: 5, size: 20 }),
+            '!coins': () => rain(['🪙', '💰', '💵'], 35, { spin: true }),
+            '!money': () => rain(['💰', '💵', '💸'], 35, { spin: true }),
+            '!party': () => { burstConfetti({ colors: ['#ff00aa', '#00e5ff', '#ffd700'] }); rain(['🎉', '🥳', '🎊'], 28, { spin: true }); },
+            '!hype': () => { burstConfetti(); rain(['🔥', '🎉'], 24, { spin: true }); banner('HYPE'); },
+            '!lightning': lightning,
+            '!thunder': lightning,
+            '!flash': lightning,
+            '!fire': () => rain(['🔥', '🧡'], 45, { dur: 2.8 }),
+            '!flames': () => rain(['🔥', '💥'], 45, { dur: 2.8 }),
+            '!rainbow': () => { burstConfetti({ colors: ['#ff0000', '#ff9900', '#ffd700', '#22c55e', '#3b82f6', '#a855f7'] }); rain(['🌈'], 18, { spin: true }); },
+            '!santa': () => rain(['🎅', '🎄', '🎁', '⛄'], 32, { spin: true }),
+            '!gg': () => { burstConfetti(); banner('GG'); },
+            '!clap': () => rain(['👏'], 30, { spin: true }),
+            '!explode': explode,
+            '!boom': explode,
+            '!flowers': () => rain(['🌸', '🌺', '🌹', '🌼'], 38, { spin: true }),
+            '!rose': () => rain(['🌹', '🥀'], 28, { spin: true }),
+            '!lol': () => rain(['😂', '🤣'], 30, { spin: true }),
+            '!lmao': () => rain(['😂', '💀'], 30, { spin: true }),
+            '!pog': () => rain(['😮', '🙀', '🔥'], 28, { spin: true }),
+            '!sub': () => { burstConfetti({ colors: ['#ffd700', '#ffffff'] }); banner('SUB'); },
+            '!plus1': () => rain(['➕', '❤️'], 20, { spin: true })
+        };
+
+        connectYouTubeChat(videoId, {
+            onMessage(msg) {
+                if (!allowed(msg.author)) return;
+                if (chatMediaUrl(msg.message)) return;
+                const cmd = chatNorm(msg.message).split(/\s+/)[0];
+                const run = EFFECTS[cmd];
+                if (!run) return;
+                const key = msg.author?.channel_id || msg.author?.name || 'anon';
+                const now = Date.now();
+                if (now - (lastUse.get(key) || 0) < cooldown) return;
+                lastUse.set(key, now);
+                run();
+            }
+        });
+    </script>
+</body>
+</html>

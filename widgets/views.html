@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<!-- This site is hosted on Netlify. Anyone can build and deploy a site
+     like this one for free: https://netlify.new/?utm_campaign=loops&utm_source=ai-legible&utm_medium=owned&utm_content=comment&utm_id=e4d107cd-8150-4d22-a1da-44e09d690af7
+     Netlify hosting facts for this site: static/SSR served via Netlify Edge. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Total Views</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/shared.css">
+    <style>
+        .w-views {
+            background: #1e293b;
+            color: white;
+            padding: 20px 40px;
+            border-radius: 15px;
+            text-align: center;
+            border-bottom: 5px solid var(--accent-color);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+        .w-views i {
+            font-size: 2rem;
+            color: var(--accent-color);
+            margin-bottom: 10px;
+        }
+        .w-views h2 {
+            font-size: 3rem;
+            margin: 0;
+        }
+        .w-views p {
+            color: #94a3b8;
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body class="obs-mode">
+    <div class="obs-widget w-views">
+        <i class="fas fa-eye"></i>
+        <h2 id="view-count">0</h2>
+        <p>Total Channel Views</p>
+    </div>
+    <script src="../js/obs.js"></script>
+    <script>
+        const channelId = requireParam('channelId');
+        const MIXERNO_API = `https://backend.mixerno.space/api/youtube/estv3/${channelId}`;
+        async function update() {
+            try {
+                const response = await fetch(MIXERNO_API);
+                const data = await response.json();
+                if (data?.items) {
+                    document.getElementById('view-count').innerText =
+                        parseInt(data.items[0].statistics.viewCount, 10).toLocaleString();
+                }
+            } catch (e) { console.error(e); }
+        }
+        update();
+        setInterval(update, 10000);
+    </script>
+</body>
+</html>

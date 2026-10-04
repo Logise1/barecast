@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<!-- This site is hosted on Netlify. Anyone can build and deploy a site
+     like this one for free: https://netlify.new/?utm_campaign=loops&utm_source=ai-legible&utm_medium=owned&utm_content=comment&utm_id=e4d107cd-8150-4d22-a1da-44e09d690af7
+     Netlify hosting facts for this site: static/SSR served via Netlify Edge. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Incoming New Years (Large)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lobster&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/shared.css">
+    <link rel="stylesheet" href="../css/newyear.css">
+    <style>
+        .w-ny-list {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            width: 100%;
+            max-width: 1600px;
+            background: transparent;
+            border: none;
+            padding: 20px;
+            position: relative;
+        }
+        .w-ny-list h3 { display: none; }
+        #ny-list-container {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            width: 100%;
+            gap: 30px;
+        }
+        .ny-card {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 20px;
+            text-align: center;
+            border: 3px solid #ffd700;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            min-width: 250px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .ny-card .ny-card-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #94a3b8;
+            margin-bottom: 5px;
+        }
+        .ny-card .ny-card-time {
+            font-size: 3rem;
+            font-weight: 800;
+            line-height: 1;
+            font-variant-numeric: tabular-nums;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .ny-card .ny-card-city {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #ffd700;
+        }
+        .ny-card.celebrating {
+            border-color: #fff;
+            box-shadow: 0 0 50px #ffd700;
+            background: linear-gradient(135deg, #b91c1c 0%, #ef4444 100%);
+            animation: shake 0.5s infinite;
+        }
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg) scale(1.05); }
+            25% { transform: translate(-3px, 0px) rotate(1deg) scale(1.05); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg) scale(1.05); }
+            75% { transform: translate(3px, 1px) rotate(-1deg) scale(1.05); }
+            100% { transform: translate(1px, -2px) rotate(-1deg) scale(1.05); }
+        }
+    </style>
+</head>
+<body class="obs-mode">
+    <div class="obs-widget w-ny-list">
+        <div class="ny-celebration-overlay" id="ny-overlay">
+            <div class="ny-celebration-title" style="font-size:2rem;">HAPPY NEW YEAR!</div>
+            <div class="ny-celebration-city" id="ny-overlay-city"></div>
+        </div>
+        <h3><i class="fas fa-globe-asia"></i> Upcoming</h3>
+        <div id="ny-list-container"></div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="../js/obs.js"></script>
+    <script src="../js/newyear.js"></script>
+    <script>
+        window.celebratedCities = new Set();
+        window.celebratedOverlaySet = new Set();
+        function update() {
+            const upcoming = nyUpcoming(5000);
+            const happening = upcoming.find((x) => x.diff <= 0 && x.diff > -5000);
+            const overlay = document.getElementById('ny-overlay');
+            const cityEl = document.getElementById('ny-overlay-city');
+            if (happening && !window.celebratedOverlaySet.has(happening.label)) {
+                overlay.classList.add('active');
+                cityEl.innerText = happening.label.split(',')[0];
+                window.celebratedOverlaySet.add(happening.label);
+                setTimeout(() => overlay.classList.remove('active'), 5000);
+            }
+            const container = document.getElementById('ny-list-container');
+            const listItems = upcoming.slice(0, 3);
+            while (container.children.length > listItems.length) container.removeChild(container.lastChild);
+            listItems.forEach((item, index) => {
+                const isCelebration = item.diff <= 0;
+                if (isCelebration && !window.celebratedCities.has(item.label)) {
+                    window.celebratedCities.add(item.label);
+                    if (window.confetti) {
+                        const end = Date.now() + 3000;
+                        (function frame() {
+                            confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#ff0000', '#00ff00', '#0000ff', '#ffd700'] });
+                            confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#ff0000', '#00ff00', '#0000ff', '#ffd700'] });
+                            if (Date.now() < end) requestAnimationFrame(frame);
+                        }());
+                    }
+                }
+                let node = container.children[index];
+                if (!node) {
+                    node = document.createElement('div');
+                    node.className = 'ny-card';
+                    node.innerHTML = '<div class="ny-card-label">INCOMING</div><div class="ny-card-time"></div><div class="ny-card-city"></div>';
+                    container.appendChild(node);
+                }
+                const cityElCard = node.querySelector('.ny-card-city');
+                const timeContainer = node.querySelector('.ny-card-time');
+                const cityName = item.label.split(',')[0];
+                if (cityElCard.innerText !== cityName) cityElCard.innerText = cityName;
+                if (isCelebration) {
+                    timeContainer.style.fontSize = '1.8rem';
+                    timeContainer.style.lineHeight = '3rem';
+                    timeContainer.innerText = 'HAPPY NEW YEAR!';
+                    node.classList.add('celebrating');
+                } else {
+                    timeContainer.style.fontSize = '3rem';
+                    timeContainer.style.lineHeight = '3rem';
+                    updateReel(timeContainer, nyFormatTime(item.diff));
+                    node.classList.remove('celebrating');
+                }
+            });
+        }
+        setInterval(update, 1000);
+        update();
+    </script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<!-- This site is hosted on Netlify. Anyone can build and deploy a site
+     like this one for free: https://netlify.new/?utm_campaign=loops&utm_source=ai-legible&utm_medium=owned&utm_content=comment&utm_id=e4d107cd-8150-4d22-a1da-44e09d690af7
+     Netlify hosting facts for this site: static/SSR served via Netlify Edge. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    <title>Keyword Highlight</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/shared.css">
+    <link rel="stylesheet" href="../css/chat.css">
+    <style>
+        .w-hl {
+            min-width: 420px;
+            max-width: 640px;
+            background: rgba(15, 23, 42, 0.95);
+            border: 3px solid #D42426;
+            border-radius: 22px;
+            padding: 20px 24px;
+            color: #fff;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: 0.35s;
+            display: flex;
+            gap: 14px;
+            align-items: center;
+        }
+        .w-hl.show { opacity: 1; transform: none; }
+        .chat-avatar { width: 58px; height: 58px; }
+        .k { color: #ffd700; font-size: 0.8rem; letter-spacing: 0.12em; text-transform: uppercase; }
+        .text { font-size: 1.7rem; font-weight: 800; }
+    </style>
+</head>
+<body class="obs-mode">
+    <div class="obs-widget w-hl" id="box">
+        <img class="chat-avatar" id="avatar" alt="" referrerpolicy="no-referrer">
+        <div>
+            <div class="k" id="key"></div>
+            <div class="name" id="name"></div>
+            <div class="text" id="text"></div>
+        </div>
+    </div>
+    <script src="../js/obs.js"></script>
+    <script src="../js/chat.js"></script>
+    <script>
+        const videoId = requireParam('videoId');
+        const keyword = qs('keyword', 'santa');
+        document.getElementById('key').textContent = 'Contains “' + keyword + '”';
+        let hideTimer;
+
+        connectYouTubeChat(videoId, {
+            onMessage(msg) {
+                if (!chatNorm(msg.message).includes(chatNorm(keyword))) return;
+                document.getElementById('avatar').src = msg.author?.image || '';
+                document.getElementById('name').textContent = msg.author?.name || '';
+                setChatContent(document.getElementById('text'), msg.message);
+                const box = document.getElementById('box');
+                box.classList.add('show');
+                clearTimeout(hideTimer);
+                hideTimer = setTimeout(() => box.classList.remove('show'), 6000);
+            }
+        });
+    </script>
+</body>
+</html>

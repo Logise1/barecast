@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<!-- This site is hosted on Netlify. Anyone can build and deploy a site
+     like this one for free: https://netlify.new/?utm_campaign=loops&utm_source=ai-legible&utm_medium=owned&utm_content=comment&utm_id=e4d107cd-8150-4d22-a1da-44e09d690af7
+     Netlify hosting facts for this site: static/SSR served via Netlify Edge. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    <title>Latest Chat</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/shared.css">
+    <link rel="stylesheet" href="../css/chat.css">
+    <style>
+        .w-latest-chat {
+            min-width: 380px;
+            max-width: 560px;
+            background: rgba(15, 23, 42, 0.94);
+            border: 3px solid #ffd700;
+            border-radius: 22px;
+            padding: 18px 22px;
+            color: #fff;
+            display: flex;
+            gap: 14px;
+            align-items: center;
+        }
+        .chat-avatar { width: 64px; height: 64px; }
+        .name { font-size: 1rem; font-weight: 800; margin-bottom: 6px; }
+        .text { font-size: 1.6rem; font-weight: 800; line-height: 1.2; }
+        .idle { color: #94a3b8; }
+    </style>
+</head>
+<body class="obs-mode">
+    <div class="obs-widget w-latest-chat">
+        <img class="chat-avatar" id="avatar" alt="" referrerpolicy="no-referrer">
+        <div>
+            <div class="name" id="name">Waiting for chat…</div>
+            <div class="text idle" id="text">Say something!</div>
+        </div>
+    </div>
+    <script src="../js/obs.js"></script>
+    <script src="../js/chat.js"></script>
+    <script>
+        const videoId = requireParam('videoId');
+        connectYouTubeChat(videoId, {
+            onMessage(msg) {
+                document.getElementById('avatar').src = msg.author?.image || '';
+                const name = document.getElementById('name');
+                name.className = 'name ' + authorNameClass(msg.author);
+                name.textContent = msg.author?.name || 'Unknown';
+                const text = document.getElementById('text');
+                text.classList.remove('idle');
+                setChatContent(text, msg.message);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+.chat-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: #334155;
+    flex-shrink: 0;
+}
+.badge {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    padding: 2px 6px;
+    border-radius: 6px;
+    margin-right: 6px;
+    vertical-align: middle;
+}
+.badge.owner { background: #ffd700; color: #111; }
+.badge.mod { background: #5b8def; color: #fff; }
+.badge.member { background: #2ba640; color: #fff; }
+.badge.verified { background: #94a3b8; color: #0f172a; }
+.badge.paid { background: #22c55e; color: #052e16; }
+.name-owner { color: #ffd700; }
+.name-mod { color: #93c5fd; }
+.name-member { color: #86efac; }
+
+.chat-media {
+    display: block;
+    max-width: 220px;
+    max-height: 160px;
+    border-radius: 10px;
+    margin-top: 6px;
+    object-fit: contain;
+}

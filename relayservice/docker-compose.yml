@@ -1,0 +1,25 @@
+services:
+  relay:
+    image: python:3.12-alpine
+    container_name: barecast-relay
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - ./main.py:/app/main.py:ro
+    command: ["python", "-u", "/app/main.py"]
+    ports:
+      - "4666:4666"
+
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    container_name: barecast-tunnel
+    restart: unless-stopped
+    network_mode: "service:relay"
+    depends_on:
+      - relay
+    command:
+      - tunnel
+      - --no-autoupdate
+      - run
+      - --token
+      - eyJhIjoiYTQwZmJkNWZhYWExOGI2YjAxOWQyMWY0YzcxOTZmNDYiLCJ0IjoiZDE5YTg0NjYtOWY3My00OTQ5LTliYjUtYjc5MDBlNDJjODU2IiwicyI6Ik9USmpNbVF6TlRZdE0yUm1aUzAwTWpjeExUZ3dZbUl0TnpVek5tTXhaV1l4TURVNSJ9

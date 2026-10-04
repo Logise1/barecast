@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<!-- This site is hosted on Netlify. Anyone can build and deploy a site
+     like this one for free: https://netlify.new/?utm_campaign=loops&utm_source=ai-legible&utm_medium=owned&utm_content=comment&utm_id=e4d107cd-8150-4d22-a1da-44e09d690af7
+     Netlify hosting facts for this site: static/SSR served via Netlify Edge. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    <title>Recent Chatters</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/shared.css">
+    <link rel="stylesheet" href="../css/chat.css">
+    <style>
+        .w-avatars {
+            background: rgba(15, 23, 42, 0.88);
+            border: 2px solid rgba(255,255,255,0.12);
+            border-radius: 20px;
+            padding: 14px 16px;
+            color: #fff;
+            min-width: 280px;
+        }
+        h3 { margin: 0 0 12px; font-size: 0.9rem; letter-spacing: 0.08em; text-transform: uppercase; color: #ffd700; }
+        .row { display: flex; flex-wrap: wrap; gap: 8px; }
+        .chat-avatar { width: 44px; height: 44px; border: 2px solid #fff; }
+    </style>
+</head>
+<body class="obs-mode">
+    <div class="obs-widget w-avatars">
+        <h3>Recent chatters</h3>
+        <div class="row" id="row"></div>
+    </div>
+    <script src="../js/obs.js"></script>
+    <script src="../js/chat.js"></script>
+    <script>
+        const videoId = requireParam('videoId');
+        const max = parseInt(qs('max', '10'), 10) || 10;
+        const row = document.getElementById('row');
+        const seen = [];
+
+        connectYouTubeChat(videoId, {
+            onMessage(msg) {
+                const id = msg.author?.channel_id || msg.author?.name;
+                if (!id || !msg.author?.image) return;
+                const existing = seen.findIndex((x) => x.id === id);
+                if (existing >= 0) seen.splice(existing, 1);
+                seen.unshift({ id, image: msg.author.image, name: msg.author.name });
+                if (seen.length > max) seen.pop();
+                row.innerHTML = '';
+                seen.forEach((person) => {
+                    const img = avatarEl(person.image);
+                    img.title = person.name;
+                    row.appendChild(img);
+                });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<!-- This site is hosted on Netlify. Anyone can build and deploy a site
+     like this one for free: https://netlify.new/?utm_campaign=loops&utm_source=ai-legible&utm_medium=owned&utm_content=comment&utm_id=e4d107cd-8150-4d22-a1da-44e09d690af7
+     Netlify hosting facts for this site: static/SSR served via Netlify Edge. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Countdown Until His Journey Ends</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lobster&family=Outfit:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/shared.css">
+    <style>
+        .w-countdown { text-align: center; }
+        .w-countdown .time-box {
+            background: rgba(255, 255, 255, 0.95);
+            display: inline-block;
+            margin: 0 10px;
+            padding: 1.5rem;
+            min-width: 100px;
+            border-radius: 15px;
+            box-shadow: 0 10px 0 #ffebee;
+            border: 2px solid #ffebee;
+        }
+        .w-countdown .time-box span {
+            font-size: 3rem;
+            color: #e63946;
+            font-weight: 800;
+            display: block;
+            font-family: 'Lobster', cursive;
+        }
+        .w-countdown .time-box p {
+            color: #64748b;
+            font-weight: 700;
+            margin-top: 5px;
+        }
+        .w-countdown h2 {
+            font-family: var(--font-heading);
+            color: white;
+            text-shadow: 2px 2px 0 #e63946, 4px 4px 0 rgba(0, 0, 0, 0.2);
+            font-size: 3.5rem;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+<body class="obs-mode">
+    <div class="obs-widget w-countdown">
+        <h2>Until His Journey Ends 🎅</h2>
+        <div class="countdown-container">
+            <div class="time-box"><span id="d">00</span><p>Days</p></div>
+            <div class="time-box"><span id="h">00</span><p>Hours</p></div>
+            <div class="time-box"><span id="m">00</span><p>Mins</p></div>
+            <div class="time-box"><span id="s">00</span><p>Secs</p></div>
+        </div>
+    </div>
+    <script src="../js/obs.js"></script>
+    <script>
+        function pad(n) { return n < 10 ? `0${n}` : n; }
+
+        async function start() {
+            const response = await fetch('../route.json');
+            const route = await response.json();
+            const takeoffOriginal = route[0]?.arrival || 1577181600000;
+            const landingOriginal = route[route.length - 1]?.arrival || (takeoffOriginal + 90000000);
+            const journeyMs = landingOriginal - takeoffOriginal;
+
+            const now = new Date();
+            let year = now.getUTCFullYear();
+            let takeoff = Date.UTC(year, 11, 24, 10, 0, 0);
+            let landing = takeoff + journeyMs;
+            if (getNow() > landing) {
+                takeoff = Date.UTC(year + 1, 11, 24, 10, 0, 0);
+                landing = takeoff + journeyMs;
+            }
+
+            function update() {
+                const distance = landing - getNow();
+                if (distance < 0) {
+                    ['d', 'h', 'm', 's'].forEach((id) => document.getElementById(id).innerText = '00');
+                    return;
+                }
+                document.getElementById('d').innerText = pad(Math.floor(distance / (1000 * 60 * 60 * 24)));
+                document.getElementById('h').innerText = pad(Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)));
+                document.getElementById('m').innerText = pad(Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)));
+                document.getElementById('s').innerText = pad(Math.floor((distance % (1000 * 60)) / 1000));
+            }
+            setInterval(update, 1000);
+            update();
+        }
+
+        start().catch((e) => console.error('Error loading journey end:', e));
+    </script>
+</body>
+</html>

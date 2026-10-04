@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<!-- This site is hosted on Netlify. Anyone can build and deploy a site
+     like this one for free: https://netlify.new/?utm_campaign=loops&utm_source=ai-legible&utm_medium=owned&utm_content=comment&utm_id=e4d107cd-8150-4d22-a1da-44e09d690af7
+     Netlify hosting facts for this site: static/SSR served via Netlify Edge. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Giveaway</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/shared.css">
+    <style>
+        .w-give {
+            width: min(380px, 94vw);
+            background: rgba(15, 23, 42, 0.94);
+            border: 3px solid #ffd700;
+            border-radius: 20px;
+            padding: 22px;
+            color: #fff;
+            text-align: center;
+        }
+        h2 { margin: 0 0 8px; }
+        .cmd { color: #ffd700; font-weight: 800; }
+        .count { font-size: 3.2rem; font-weight: 800; line-height: 1; margin: 12px 0; }
+        .winner { margin-top: 10px; font-size: 1.3rem; color: #ffd700; min-height: 1.6em; }
+        .sub { color: #94a3b8; font-size: 0.85rem; }
+    </style>
+</head>
+<body class="obs-mode">
+    <div class="obs-widget w-give">
+        <h2>Giveaway</h2>
+        <p>Type <span class="cmd" id="cmd">!enter</span> to join</p>
+        <div class="count" id="count">0</div>
+        <p class="sub">entries · mods type <span class="cmd" id="draw">!draw</span></p>
+        <div class="winner" id="winner"></div>
+    </div>
+    <script src="../js/obs.js"></script>
+    <script src="../js/chat.js"></script>
+    <script>
+        const videoId = requireParam('videoId');
+        const enterCmd = chatNorm(qs('command', '!enter'));
+        const drawCmd = chatNorm(qs('draw', '!draw'));
+        document.getElementById('cmd').textContent = qs('command', '!enter');
+        document.getElementById('draw').textContent = qs('draw', '!draw');
+        const entries = new Map();
+
+        function renderCount() {
+            document.getElementById('count').textContent = String(entries.size);
+        }
+
+        connectYouTubeChat(videoId, {
+            onMessage(msg) {
+                if (chatMediaUrl(msg.message)) return;
+                const text = chatNorm(msg.message);
+                const id = msg.author?.channel_id || msg.author?.name;
+                if (!id) return;
+                if (text === enterCmd) {
+                    entries.set(id, msg.author?.name || 'Unknown');
+                    renderCount();
+                    return;
+                }
+                if (text === drawCmd && (msg.author?.moderator || msg.author?.owner)) {
+                    const names = [...entries.values()];
+                    if (!names.length) {
+                        document.getElementById('winner').textContent = 'No entries yet';
+                        return;
+                    }
+                    const pick = names[Math.floor(Math.random() * names.length)];
+                    document.getElementById('winner').textContent = 'Winner: ' + pick;
+                }
+            }
+        });
+    </script>
+</body>
+</html>

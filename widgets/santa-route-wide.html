@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<!-- This site is hosted on Netlify. Anyone can build and deploy a site
+     like this one for free: https://netlify.new/?utm_campaign=loops&utm_source=ai-legible&utm_medium=owned&utm_content=comment&utm_id=e4d107cd-8150-4d22-a1da-44e09d690af7
+     Netlify hosting facts for this site: static/SSR served via Netlify Edge. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Santa Route 2:1</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/shared.css">
+    <style>
+        .w-route {
+            background: #0f172a;
+            color: white;
+            padding: 0;
+            border-radius: 18px;
+            width: 800px;
+            height: 280px;
+            border: 4px solid #e63946;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .route-bg {
+            position: absolute; inset: 0;
+            background-size: cover; background-position: center;
+            z-index: 0; filter: brightness(0.3);
+            transition: background-image 1s ease-in-out;
+        }
+        .route-content {
+            position: relative;
+            z-index: 1;
+            padding: 12px 16px;
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        .w-route-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            padding-bottom: 8px;
+            flex-shrink: 0;
+        }
+        .w-route-header i {
+            background: rgba(255,255,255,0.2);
+            color: #e63946;
+            width: 34px; height: 34px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .w-route-header h2 { margin: 0; font-size: 1.35rem; color: white; }
+        .w-route-header p { margin: 0; color: rgba(255,255,255,0.7); font-size: 0.8rem; font-weight: 700; }
+        .route-body {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            flex: 1;
+            min-height: 0;
+        }
+        .next-stop-highlight {
+            background: rgba(230, 57, 70, 0.85);
+            border: 2px solid white;
+            padding: 12px;
+            border-radius: 15px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 0;
+        }
+        .next-stop-highlight .label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 800;
+            display: block;
+            margin-bottom: 4px;
+        }
+        .next-stop-highlight .city {
+            font-size: 1.45rem;
+            font-weight: 800;
+            line-height: 1.15;
+            margin-bottom: 6px;
+        }
+        .next-stop-highlight .timer {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+        .sleep-warning {
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
+            border-radius: 15px;
+            padding: 10px 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        .sleep-warning h3 {
+            margin: 0 0 6px 0;
+            font-size: 0.85rem;
+            color: #fbbf24;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        .city-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            overflow: hidden;
+            flex: 1;
+            justify-content: space-between;
+        }
+        .city-list li {
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding-bottom: 3px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        .city-list li:last-child { border-bottom: none; }
+        .city-list li span.time { color: rgba(255,255,255,0.6); font-size: 0.85rem; white-space: nowrap; }
+    </style>
+</head>
+<body class="obs-mode">
+    <div class="obs-widget w-route">
+        <div id="route-bg" class="route-bg"></div>
+        <div class="route-content">
+            <div class="w-route-header">
+                <i class="fas fa-gift"></i>
+                <div>
+                    <h2>Santa's Route</h2>
+                    <p>Live Delivery Status</p>
+                </div>
+            </div>
+            <div class="route-body">
+                <div class="next-stop-highlight">
+                    <span class="label">Heading To</span>
+                    <div id="next-city" class="city">---</div>
+                    <div id="route-timer" class="timer">00:00</div>
+                </div>
+                <div class="sleep-warning">
+                    <h3><i class="fas fa-moon"></i> Sleep Warning!</h3>
+                    <ul id="city-list" class="city-list"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="../js/obs.js"></script>
+    <script>
+        async function start() {
+            const response = await fetch('../route.json');
+            const destinationsArray = await response.json();
+            const takeoffTime2026 = Date.UTC(2026, 11, 24, 10, 0, 0);
+            const baseArrivalOriginal = destinationsArray[0]?.arrival || 1577181600000;
+            const routeData = destinationsArray.map((stop, idx) => {
+                const elapsed = stop.arrival ? (stop.arrival - baseArrivalOriginal) : (idx * 300000);
+                return { ...stop, arrival: takeoffTime2026 + elapsed };
+            });
+            const formatTimer = (ms) => {
+                if (ms < 0) return '00:00';
+                const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((ms % (1000 * 60)) / 1000);
+                return `${minutes < 10 ? '0' + minutes : minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+            };
+            const locName = (stop) => stop.region ? `${stop.city}, ${stop.region}` : stop.city;
+            const updateRoute = () => {
+                const now = getNow();
+                let currentStopIndex = -1;
+                if (now >= routeData[0].arrival) {
+                    for (let i = 0; i < routeData.length; i++) {
+                        if (now >= routeData[i].arrival) currentStopIndex = i;
+                        else break;
+                    }
+                }
+                const nextCityEl = document.getElementById('next-city');
+                const timerEl = document.getElementById('route-timer');
+                const bgEl = document.getElementById('route-bg');
+                const listEl = document.getElementById('city-list');
+                let nextStop = null;
+                let displayCity = 'North Pole';
+                if (currentStopIndex === -1) {
+                    nextStop = routeData[0];
+                    displayCity = locName(nextStop);
+                } else if (currentStopIndex >= routeData.length - 1) {
+                    displayCity = "Santa's Village";
+                } else {
+                    nextStop = routeData[currentStopIndex + 1];
+                    displayCity = locName(nextStop);
+                }
+                nextCityEl.innerText = displayCity;
+                bgEl.style.backgroundImage = nextStop?.photo_url ? `url('${nextStop.photo_url}')` : 'none';
+                timerEl.innerText = nextStop ? formatTimer(nextStop.arrival - now) : 'Done';
+                listEl.innerHTML = '';
+                let startIndex = currentStopIndex === -1 ? 1 : currentStopIndex + 2;
+                let count = 0;
+                for (let i = startIndex; i < routeData.length && count < 5; i++) {
+                    const stop = routeData[i];
+                    const t = stop.arrival - now;
+                    let timeStr = formatTimer(t);
+                    if (t > 86400000) {
+                        timeStr = `${Math.floor(t / 86400000)}d ${Math.floor((t % 86400000) / 3600000)}h`;
+                    } else if (t > 3600000) {
+                        timeStr = `${Math.floor(t / 3600000)}h ${Math.floor((t % 3600000) / 60000)}m`;
+                    }
+                    const li = document.createElement('li');
+                    const name = document.createElement('span');
+                    name.textContent = locName(stop);
+                    const time = document.createElement('span');
+                    time.className = 'time';
+                    time.textContent = timeStr;
+                    li.appendChild(name);
+                    li.appendChild(time);
+                    listEl.appendChild(li);
+                    count++;
+                }
+            };
+            setInterval(updateRoute, 1000);
+            updateRoute();
+        }
+        start().catch((e) => console.error('Error loading route:', e));
+    </script>
+</body>
+</html>

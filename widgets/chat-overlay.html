@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<!-- This site is hosted on Netlify. Anyone can build and deploy a site
+     like this one for free: https://netlify.new/?utm_campaign=loops&utm_source=ai-legible&utm_medium=owned&utm_content=comment&utm_id=e4d107cd-8150-4d22-a1da-44e09d690af7
+     Netlify hosting facts for this site: static/SSR served via Netlify Edge. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    <title>Chat Overlay</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/shared.css">
+    <link rel="stylesheet" href="../css/chat.css">
+    <style>
+        body.obs-mode { align-items: flex-end; justify-content: flex-start; }
+        .w-chat {
+            width: min(420px, 96vw);
+            max-height: 70vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 12px;
+            mask-image: linear-gradient(to bottom, transparent, #000 48px, #000);
+        }
+        .row {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+            background: rgba(15, 23, 42, 0.82);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 14px;
+            padding: 8px 10px;
+            margin-top: 8px;
+            color: #fff;
+            animation: fadeIn 0.25s ease-out;
+        }
+        .body { min-width: 0; }
+        .meta { font-size: 0.82rem; font-weight: 800; margin-bottom: 2px; }
+        .text { font-size: 1rem; line-height: 1.35; word-wrap: break-word; }
+        .paid { border-color: #22c55e; background: rgba(22, 101, 52, 0.85); }
+    </style>
+</head>
+<body class="obs-mode">
+    <div class="obs-widget w-chat" id="list"></div>
+    <script src="../js/obs.js"></script>
+    <script src="../js/chat.js"></script>
+    <script>
+        const videoId = requireParam('videoId');
+        const max = parseInt(qs('max', '12'), 10) || 12;
+        const list = document.getElementById('list');
+
+        function addMessage(msg) {
+            const row = document.createElement('div');
+            row.className = 'row' + (isPaidChat(msg) ? ' paid' : '');
+            row.appendChild(avatarEl(msg.author?.image));
+            const body = document.createElement('div');
+            body.className = 'body';
+            const meta = document.createElement('div');
+            meta.className = 'meta';
+            appendBadges(meta, msg.author, isPaidChat(msg));
+            const name = document.createElement('span');
+            name.className = authorNameClass(msg.author);
+            name.textContent = msg.author?.name || 'Unknown';
+            meta.appendChild(name);
+            if (isPaidChat(msg)) {
+                const amt = document.createElement('span');
+                amt.textContent = ' · ' + msg.amount;
+                meta.appendChild(amt);
+            }
+            const text = document.createElement('div');
+            text.className = 'text';
+            setChatContent(text, msg.message);
+            body.appendChild(meta);
+            body.appendChild(text);
+            row.appendChild(body);
+            list.appendChild(row);
+            while (list.children.length > max) list.removeChild(list.firstChild);
+        }
+
+        connectYouTubeChat(videoId, { onMessage: addMessage });
+    </script>
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<!-- This site is hosted on Netlify. Anyone can build and deploy a site
+     like this one for free: https://netlify.new/?utm_campaign=loops&utm_source=ai-legible&utm_medium=owned&utm_content=comment&utm_id=e4d107cd-8150-4d22-a1da-44e09d690af7
+     Netlify hosting facts for this site: static/SSR served via Netlify Edge. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Next Midnight Countdown</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lobster&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/shared.css">
+    <link rel="stylesheet" href="../css/newyear.css">
+    <style>
+        .w-ny-countdown {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            border: 4px solid #ffd700;
+            box-shadow: 0 0 40px rgba(255, 215, 0, 0.2);
+            min-width: 400px;
+            position: relative;
+        }
+        .ny-header {
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 20px;
+            color: #ffd700;
+            font-weight: 800;
+        }
+        .ny-timer {
+            font-size: 4.5rem;
+            font-weight: 800;
+            line-height: 1;
+            font-variant-numeric: tabular-nums;
+            margin-bottom: 15px;
+            text-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+        }
+        .ny-timezone { color: #94a3b8; font-weight: 600; font-size: 1.2rem; }
+        .ny-label {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 5px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body class="obs-mode">
+    <div class="obs-widget w-ny-countdown">
+        <div class="ny-celebration-overlay" id="ny-overlay">
+            <div class="ny-celebration-title">HAPPY<br>NEW YEAR!</div>
+            <div class="ny-celebration-city" id="ny-overlay-city"></div>
+        </div>
+        <div class="ny-header">Next New Year In</div>
+        <div id="ny-timer" class="ny-timer">00:00:00</div>
+        <div id="ny-timezone" class="ny-timezone">Detecting...</div>
+        <div class="ny-label">HAPPENING SOON</div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="../js/obs.js"></script>
+    <script src="../js/newyear.js"></script>
+    <script>
+        window.celebratedOverlaySet = new Set();
+        function update() {
+            const upcoming = nyUpcoming(5000);
+            if (!upcoming.length) {
+                document.getElementById('ny-timezone').innerText = 'All timezones have passed!';
+                return;
+            }
+            const happening = upcoming.find((x) => x.diff <= 0 && x.diff > -5000);
+            const nextUp = upcoming.filter((x) => x.diff > 0);
+            const overlay = document.getElementById('ny-overlay');
+            const cityEl = document.getElementById('ny-overlay-city');
+            if (happening) {
+                if (!window.celebratedOverlaySet.has(happening.label)) {
+                    overlay.classList.add('active');
+                    cityEl.innerText = happening.label.split(',')[0];
+                    window.celebratedOverlaySet.add(happening.label);
+                    if (window.confetti) confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+                    setTimeout(() => overlay.classList.remove('active'), 5000);
+                }
+            }
+            const target = nextUp[0];
+            if (target) {
+                updateReel(document.getElementById('ny-timer'), nyFormatTime(target.diff));
+                document.getElementById('ny-timezone').innerText = target.label;
+            }
+        }
+        setInterval(update, 1000);
+        update();
+    </script>
+</body>
+</html>

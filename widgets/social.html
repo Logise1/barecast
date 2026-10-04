@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<!-- This site is hosted on Netlify. Anyone can build and deploy a site
+     like this one for free: https://netlify.new/?utm_campaign=loops&utm_source=ai-legible&utm_medium=owned&utm_content=comment&utm_id=e4d107cd-8150-4d22-a1da-44e09d690af7
+     Netlify hosting facts for this site: static/SSR served via Netlify Edge. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Rotator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/shared.css">
+    <style>
+        .w-social {
+            background: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 1.5rem;
+            font-weight: 800;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            border: 3px solid white;
+            min-width: 300px;
+        }
+        .w-social i { font-size: 1.8rem; }
+        .w-social.youtube { color: #FF0000; border-color: #ffeaea; }
+        .w-social.discord { color: #5865F2; border-color: #ebeeff; }
+    </style>
+</head>
+<body class="obs-mode">
+    <div id="widget-social" class="obs-widget w-social youtube">
+        <i id="social-icon" class="fab fa-youtube"></i>
+        <span id="social-text">Subscribe!</span>
+    </div>
+    <script src="../js/obs.js"></script>
+    <script>
+        const youtubeText = qs('youtube', 'Subscribe!');
+        const discordText = qs('discord', 'Join our Discord!');
+        const container = document.getElementById('widget-social');
+        const icon = document.getElementById('social-icon');
+        const text = document.getElementById('social-text');
+        text.innerText = youtubeText;
+        const steps = [
+            { class: 'youtube', icon: 'fa-youtube', text: youtubeText },
+            { class: 'discord', icon: 'fa-discord', text: discordText }
+        ];
+        let index = 0;
+        setInterval(() => {
+            index = (index + 1) % steps.length;
+            const step = steps[index];
+            container.style.opacity = '0';
+            setTimeout(() => {
+                container.classList.remove('youtube', 'discord');
+                container.classList.add(step.class);
+                icon.className = `fab ${step.icon}`;
+                text.innerText = step.text;
+                container.style.opacity = '1';
+            }, 500);
+        }, 5000);
+    </script>
+</body>
+</html>

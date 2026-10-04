@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<!-- This site is hosted on Netlify. Anyone can build and deploy a site
+     like this one for free: https://netlify.new/?utm_campaign=loops&utm_source=ai-legible&utm_medium=owned&utm_content=comment&utm_id=e4d107cd-8150-4d22-a1da-44e09d690af7
+     Netlify hosting facts for this site: static/SSR served via Netlify Edge. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Activity</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/shared.css">
+    <style>
+        .w-act {
+            width: 280px;
+            background: rgba(15, 23, 42, 0.94);
+            border: 2px solid rgba(255,255,255,0.12);
+            border-radius: 20px;
+            padding: 18px 20px;
+            color: #fff;
+            text-align: center;
+        }
+        .n { font-size: 3rem; font-weight: 800; line-height: 1; color: #ffd700; }
+        p { margin: 8px 0 0; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.8rem; }
+        .bar { height: 10px; background: #1e293b; border-radius: 99px; overflow: hidden; margin-top: 14px; }
+        .fill { height: 100%; width: 0; background: linear-gradient(90deg, #22c55e, #ffd700, #D42426); transition: width 0.4s; }
+    </style>
+</head>
+<body class="obs-mode">
+    <div class="obs-widget w-act">
+        <div class="n" id="n">0</div>
+        <p>messages / min</p>
+        <div class="bar"><div class="fill" id="fill"></div></div>
+    </div>
+    <script src="../js/obs.js"></script>
+    <script src="../js/chat.js"></script>
+    <script>
+        const videoId = requireParam('videoId');
+        const times = [];
+        function tick() {
+            const cutoff = Date.now() - 60000;
+            while (times.length && times[0] < cutoff) times.shift();
+            document.getElementById('n').textContent = String(times.length);
+            document.getElementById('fill').style.width = Math.min(100, times.length * 4) + '%';
+        }
+        connectYouTubeChat(videoId, {
+            onMessage() { times.push(Date.now()); tick(); }
+        });
+        setInterval(tick, 1000);
+        tick();
+    </script>
+</body>
+</html>

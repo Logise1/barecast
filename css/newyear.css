@@ -1,0 +1,52 @@
+.ny-digit-window {
+    display: inline-block;
+    position: relative;
+    height: 1em;
+    line-height: 1em;
+    overflow: hidden;
+    vertical-align: bottom;
+}
+.ny-digit-track {
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+.ny-digit-val {
+    height: 1em;
+    display: block;
+    text-align: center;
+}
+.ny-celebration-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s;
+    border-radius: 15px;
+}
+.ny-celebration-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+}
+.ny-celebration-title {
+    font-family: var(--font-heading);
+    font-size: 3rem;
+    color: #ffd700;
+    text-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+    text-align: center;
+    line-height: 1.1;
+}
+.ny-celebration-city {
+    font-size: 1.5rem;
+    color: white;
+    margin-top: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-weight: 800;
+}

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<!-- This site is hosted on Netlify. Anyone can build and deploy a site
+     like this one for free: https://netlify.new/?utm_campaign=loops&utm_source=ai-legible&utm_medium=owned&utm_content=comment&utm_id=e4d107cd-8150-4d22-a1da-44e09d690af7
+     Netlify hosting facts for this site: static/SSR served via Netlify Edge. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Top Chatters</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/shared.css">
+    <style>
+        .w-top {
+            width: 320px;
+            background: rgba(15, 23, 42, 0.94);
+            border: 2px solid rgba(255,255,255,0.12);
+            border-radius: 20px;
+            padding: 18px;
+            color: #fff;
+        }
+        h3 { margin: 0 0 12px; color: #ffd700; text-transform: uppercase; letter-spacing: 0.08em; }
+        li {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            font-weight: 700;
+        }
+        li:last-child { border: 0; }
+        .n { color: #ffd700; width: 1.4em; }
+        .score { color: #94a3b8; }
+        ul { list-style: none; }
+    </style>
+</head>
+<body class="obs-mode">
+    <div class="obs-widget w-top">
+        <h3>Top chatters</h3>
+        <ul id="list"></ul>
+    </div>
+    <script src="../js/obs.js"></script>
+    <script src="../js/chat.js"></script>
+    <script>
+        const videoId = requireParam('videoId');
+        const max = parseInt(qs('max', '5'), 10) || 5;
+        const counts = new Map();
+
+        function render() {
+            const ranked = [...counts.values()].sort((a, b) => b.n - a.n).slice(0, max);
+            const list = document.getElementById('list');
+            list.innerHTML = '';
+            if (!ranked.length) {
+                const li = document.createElement('li');
+                li.textContent = 'Waiting for chat…';
+                list.appendChild(li);
+                return;
+            }
+            ranked.forEach((row, i) => {
+                const li = document.createElement('li');
+                const left = document.createElement('span');
+                const n = document.createElement('span');
+                n.className = 'n';
+                n.textContent = String(i + 1);
+                left.appendChild(n);
+                left.appendChild(document.createTextNode(' ' + row.name));
+                const score = document.createElement('span');
+                score.className = 'score';
+                score.textContent = String(row.n);
+                li.appendChild(left);
+                li.appendChild(score);
+                list.appendChild(li);
+            });
+        }
+
+        connectYouTubeChat(videoId, {
+            onMessage(msg) {
+                const id = msg.author?.channel_id || msg.author?.name;
+                if (!id) return;
+                const cur = counts.get(id) || { name: msg.author?.name || 'Unknown', n: 0 };
+                cur.n += 1;
+                cur.name = msg.author?.name || cur.name;
+                counts.set(id, cur);
+                render();
+            }
+        });
+        render();
+    </script>
+</body>
+</html>

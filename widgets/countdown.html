@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<!-- This site is hosted on Netlify. Anyone can build and deploy a site
+     like this one for free: https://netlify.new/?utm_campaign=loops&utm_source=ai-legible&utm_medium=owned&utm_content=comment&utm_id=e4d107cd-8150-4d22-a1da-44e09d690af7
+     Netlify hosting facts for this site: static/SSR served via Netlify Edge. -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Countdown Widget</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lobster&family=Montserrat:wght@800&display=swap" rel="stylesheet">
+  
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: transparent;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .countdown-container {
+      position: relative;
+      background-color: #ff2228;
+      display: flex;
+      align-items: stretch;
+      padding: 12px 14px;
+      border-radius: 16px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+    }
+
+    /* Picos laterales de lazo */
+    .countdown-container::before,
+    .countdown-container::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 0;
+      height: 0;
+      border-top: 14px solid transparent;
+      border-bottom: 14px solid transparent;
+    }
+
+    .countdown-container::before {
+      left: -10px;
+      border-right: 12px solid #ff2228;
+    }
+
+    .countdown-container::after {
+      right: -10px;
+      border-left: 12px solid #ff2228;
+    }
+
+    .time-unit {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2px 16px;
+      min-width: 90px;
+    }
+
+    .time-unit:first-child {
+      min-width: 105px;
+    }
+
+    .time-unit:not(:last-child) {
+      border-right: 2px solid rgba(139, 0, 0, 0.45);
+    }
+
+    .number-wrapper {
+      position: relative;
+      width: 100%;
+      height: 56px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      clip-path: inset(0 -50px 0 -50px);
+    }
+
+    .number {
+      position: absolute;
+      font-family: 'Lobster', cursive;
+      color: #ffffff;
+      font-size: 50px;
+      line-height: 1;
+      font-style: normal;
+      text-align: center;
+      white-space: nowrap;
+      padding: 0 6px;
+    }
+
+    .label {
+      font-family: 'Montserrat', sans-serif;
+      color: #ffffff;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      margin-top: 6px;
+      font-style: normal;
+      text-align: center;
+    }
+
+    /* Animaciones */
+    .slide-out-up {
+      animation: slideOutUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+
+    .slide-in-up {
+      animation: slideInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+
+    @keyframes slideOutUp {
+      0% {
+        transform: translateY(0);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(-100%);
+        opacity: 0;
+      }
+    }
+
+    @keyframes slideInUp {
+      0% {
+        transform: translateY(100%);
+        opacity: 0;
+      }
+      100% {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="countdown-container">
+    <div class="time-unit">
+      <div class="number-wrapper" id="days-wrapper">
+        <span class="number">--</span>
+      </div>
+      <span class="label">DAYS</span>
+    </div>
+    <div class="time-unit">
+      <div class="number-wrapper" id="hours-wrapper">
+        <span class="number">--</span>
+      </div>
+      <span class="label">HRS</span>
+    </div>
+    <div class="time-unit">
+      <div class="number-wrapper" id="minutes-wrapper">
+        <span class="number">--</span>
+      </div>
+      <span class="label">MIN</span>
+    </div>
+    <div class="time-unit">
+      <div class="number-wrapper" id="seconds-wrapper">
+        <span class="number">--</span>
+      </div>
+      <span class="label">SEC</span>
+    </div>
+  </div>
+
+  <script>
+    function getTargetDate() {
+      const now = new Date();
+      let target = new Date(Date.UTC(now.getUTCFullYear(), 11, 24, 10, 0, 0));
+      if (now.getTime() > target.getTime()) {
+        target = new Date(Date.UTC(now.getUTCFullYear() + 1, 11, 24, 10, 0, 0));
+      }
+      return target.getTime();
+    }
+
+    const targetDate = getTargetDate();
+
+    function padZero(num) {
+      return String(num).padStart(2, '0');
+    }
+
+    function updateValue(wrapperId, val) {
+      const formattedVal = padZero(val);
+      const wrapper = document.getElementById(wrapperId);
+      const currentSpan = wrapper.querySelector('.number:not(.slide-out-up)');
+
+      if (!currentSpan) {
+        wrapper.innerHTML = `<span class="number">${formattedVal}</span>`;
+        return;
+      }
+
+      if (currentSpan.textContent !== formattedVal) {
+        currentSpan.classList.add('slide-out-up');
+
+        const newSpan = document.createElement('span');
+        newSpan.className = 'number slide-in-up';
+        newSpan.textContent = formattedVal;
+        wrapper.appendChild(newSpan);
+
+        setTimeout(() => {
+          currentSpan.remove();
+          newSpan.classList.remove('slide-in-up');
+        }, 410);
+      }
+    }
+
+    function updateCountdown() {
+      const now = new Date().getTime();
+      const difference = targetDate - now;
+
+      if (difference <= 0) {
+        updateValue('days-wrapper', 0);
+        updateValue('hours-wrapper', 0);
+        updateValue('minutes-wrapper', 0);
+        updateValue('seconds-wrapper', 0);
+        return;
+      }
+
+      const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+
+      updateValue('days-wrapper', days);
+      updateValue('hours-wrapper', hours);
+      updateValue('minutes-wrapper', minutes);
+      updateValue('seconds-wrapper', seconds);
+    }
+
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<!-- This site is hosted on Netlify. Anyone can build and deploy a site
+     like this one for free: https://netlify.new/?utm_campaign=loops&utm_source=ai-legible&utm_medium=owned&utm_content=comment&utm_id=e4d107cd-8150-4d22-a1da-44e09d690af7
+     Netlify hosting facts for this site: static/SSR served via Netlify Edge. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    <title>Paid Messages</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/shared.css">
+    <link rel="stylesheet" href="../css/chat.css">
+    <style>
+        .w-paid {
+            min-width: 420px;
+            max-width: 560px;
+            background: linear-gradient(135deg, #14532d, #166534);
+            border: 3px solid #86efac;
+            border-radius: 22px;
+            padding: 20px 24px;
+            color: #fff;
+            display: flex;
+            gap: 14px;
+            align-items: center;
+            opacity: 0;
+            transform: scale(0.96);
+            transition: 0.3s;
+        }
+        .w-paid.show { opacity: 1; transform: none; }
+        .chat-avatar { width: 58px; height: 58px; }
+        .amt { color: #bbf7d0; font-size: 0.85rem; letter-spacing: 0.08em; text-transform: uppercase; }
+        .text { font-size: 1.5rem; font-weight: 800; }
+    </style>
+</head>
+<body class="obs-mode">
+    <div class="obs-widget w-paid" id="box">
+        <img class="chat-avatar" id="avatar" alt="" referrerpolicy="no-referrer">
+        <div>
+            <div class="amt" id="amt">Paid message</div>
+            <div id="name"></div>
+            <div class="text" id="text">Waiting for Super Chats…</div>
+        </div>
+    </div>
+    <script src="../js/obs.js"></script>
+    <script src="../js/chat.js"></script>
+    <script>
+        const videoId = requireParam('videoId');
+        let hideTimer;
+        connectYouTubeChat(videoId, {
+            onMessage(msg) {
+                if (!isPaidChat(msg)) return;
+                document.getElementById('avatar').src = msg.author?.image || '';
+                document.getElementById('amt').textContent = String(msg.amount);
+                document.getElementById('name').textContent = msg.author?.name || '';
+                setChatContent(document.getElementById('text'), msg.message);
+                const box = document.getElementById('box');
+                box.classList.add('show');
+                clearTimeout(hideTimer);
+                hideTimer = setTimeout(() => box.classList.remove('show'), 8000);
+            }
+        });
+    </script>
+</body>
+</html>

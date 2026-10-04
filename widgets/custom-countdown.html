@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<!-- This site is hosted on Netlify. Anyone can build and deploy a site
+     like this one for free: https://netlify.new/?utm_campaign=loops&utm_source=ai-legible&utm_medium=owned&utm_content=comment&utm_id=e4d107cd-8150-4d22-a1da-44e09d690af7
+     Netlify hosting facts for this site: static/SSR served via Netlify Edge. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Countdown</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lobster&family=Outfit:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/shared.css">
+    <style>
+        .w-countdown {
+            text-align: center;
+            transition: transform 0.3s;
+            transform-origin: center;
+        }
+        .w-countdown .time-box {
+            background: rgba(255, 255, 255, 0.95);
+            display: inline-block;
+            margin: 0 10px;
+            padding: 1.5rem;
+            min-width: 100px;
+            border-radius: 15px;
+            box-shadow: 0 10px 0 #e2e8f0;
+            border: 2px solid #e2e8f0;
+        }
+        .w-countdown .time-box span {
+            font-size: 3rem;
+            color: var(--primary-color);
+            font-weight: 800;
+            display: block;
+            font-family: 'Lobster', cursive;
+        }
+        .w-countdown .time-box p {
+            color: #64748b;
+            font-weight: 700;
+            margin-top: 5px;
+        }
+        .w-countdown h2 {
+            font-family: var(--font-heading);
+            color: white;
+            text-shadow: 2px 2px 0 var(--primary-color), 4px 4px 0 rgba(0, 0, 0, 0.2);
+            font-size: 3.5rem;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+<body class="obs-mode">
+    <div class="obs-widget w-countdown" id="widget-custom_countdown">
+        <h2 id="custom-cd-title">Custom Event</h2>
+        <div class="countdown-container">
+            <div class="time-box"><span id="ccd">00</span><p>Days</p></div>
+            <div class="time-box"><span id="cch">00</span><p>Hours</p></div>
+            <div class="time-box"><span id="ccm">00</span><p>Mins</p></div>
+            <div class="time-box"><span id="ccs">00</span><p>Secs</p></div>
+        </div>
+    </div>
+    <script src="../js/obs.js"></script>
+    <script>
+        const textStr = qs('text', 'Event Starts In');
+        const sizeStr = qs('size', 'medium');
+        const dateStr = qs('date');
+        document.getElementById('custom-cd-title').innerText = textStr;
+        const container = document.getElementById('widget-custom_countdown');
+        if (sizeStr === 'small') container.style.transform = 'scale(0.7)';
+        if (sizeStr === 'large') container.style.transform = 'scale(1.3)';
+        const targetDate = dateStr ? new Date(dateStr).getTime() : Date.now() + 86400000;
+        function pad(n) { return n < 10 ? `0${n}` : n; }
+        function update() {
+            const distance = targetDate - getNow();
+            if (distance < 0) {
+                ['ccd', 'cch', 'ccm', 'ccs'].forEach((id) => document.getElementById(id).innerText = '00');
+                return;
+            }
+            document.getElementById('ccd').innerText = pad(Math.floor(distance / (1000 * 60 * 60 * 24)));
+            document.getElementById('cch').innerText = pad(Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)));
+            document.getElementById('ccm').innerText = pad(Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)));
+            document.getElementById('ccs').innerText = pad(Math.floor((distance % (1000 * 60)) / 1000));
+        }
+        setInterval(update, 1000);
+        update();
+    </script>
+</body>
+</html>

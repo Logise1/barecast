@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BareCast</title>
+  <link rel="icon" id="favicon" href="assets/favicon.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lobster&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <section id="screen-landing" class="screen" data-screen="landing">
+      <header class="top-meta">
+        <span>01</span>
+        <span>HLS / TS</span>
+        <span id="meta-live">0 live</span>
+      </header>
+      <div class="landing-body">
+        <h1 class="wordmark">Bare<br><em>Cast</em></h1>
+        <p class="lede">Browser streaming. No apps to install.</p>
+        <section class="live-board" id="live-board" aria-live="polite">
+          <div class="live-head">
+            <span class="tally-dot"></span>
+            <h2>Live now</h2>
+            <strong id="live-count">0</strong>
+          </div>
+        </section>
+      </div>
+      <footer class="landing-foot">
+        <button type="button" class="btn-primary" id="btn-beginner">I'm a beginner</button>
+        <button type="button" class="btn-ghost hidden" id="btn-continue">Continue to studio</button>
+      </footer>
+    </section>
+
+    <section id="screen-onboard" class="screen hidden" data-screen="onboard">
+      <header class="bar">
+        <button type="button" class="linkish" data-go="landing">← back</button>
+        <span class="bar-title">Stream key</span>
+        <span class="bar-step">02</span>
+      </header>
+
+      <div class="onboard-grid">
+        <article class="howto">
+          <h2>How to create your stream key</h2>
+          <ol>
+            <li>
+              <strong>Open YouTube Studio</strong>
+              <span>Go to <a href="https://studio.youtube.com" target="_blank" rel="noopener">studio.youtube.com</a> with the account that will go live.</span>
+            </li>
+            <li>
+              <strong>Create → Go live</strong>
+              <span>Top right. First time, YouTube may ask you to verify your phone.</span>
+            </li>
+            <li>
+              <strong>Choose “Stream”</strong>
+              <span>Do not use YouTube’s webcam mode. BareCast needs an encoder stream key. Create the key with the HLS protocol.</span>
+            </li>
+            <li>
+              <strong>Copy the stream key</strong>
+              <span>It looks like <code>xxxx-xxxx-xxxx-xxxx</code>. Paste it on the right. It stays on this computer only.</span>
+            </li>
+          </ol>
+          <p class="note">The key is sent to <code>youtubehsls.lonormal.com</code>, then forwarded to YouTube. Paste it and enter the studio.</p>
+        </article>
+
+        <form class="key-card" id="form-key" autocomplete="off">
+          <label for="stream-key">Your stream key</label>
+          <div class="key-row">
+            <input id="stream-key" name="streamKey" type="password" spellcheck="false" placeholder="xxxx-xxxx-xxxx-xxxx" required>
+            <button type="button" class="btn-tiny" id="toggle-key">show</button>
+          </div>
+
+          <details class="advanced" id="advanced-ingest">
+            <summary>Advanced HLS ingest</summary>
+            <label for="ingest-url">URL template</label>
+            <input id="ingest-url" name="ingestUrl" type="url" spellcheck="false" placeholder="https://youtubehsls.lonormal.com/{key}/{file}">
+            <p class="hint">Default: <code>https://youtubehsls.lonormal.com/{key}/{file}</code>. <code>{key}</code> and <code>{file}</code> are filled in for you.</p>
+            <label for="ingest-method">Method</label>
+            <select id="ingest-method" name="ingestMethod">
+              <option value="PUT">PUT</option>
+              <option value="POST">POST</option>
+            </select>
+          </details>
+
+          <button type="submit" class="btn-primary">Enter studio</button>
+          <button type="button" class="btn-text" id="btn-wipe">Clear saved data</button>
+        </form>
+      </div>
+    </section>
+
+    <section id="screen-studio" class="screen screen-studio hidden" data-screen="studio">
+      <header class="studio-head">
+        <button type="button" class="brand-mini" data-go="landing">Bare<em>Cast</em></button>
+        <div class="tally" id="tally">
+          <span class="tally-dot" aria-hidden="true"></span>
+          <span id="tally-label">STANDBY</span>
+        </div>
+        <span id="monitor-clock">00:00:00</span>
+        <button type="button" class="linkish" data-go="onboard">key</button>
+      </header>
+      <div id="reimport-bar" class="reimport-bar hidden" role="status">
+        <span id="reimport-msg"></span>
+        <button type="button" class="btn-tiny" id="btn-reimport">Re-import</button>
+      </div>
+
+      <div class="studio-grid">
+        <div class="stage-wrap">
+          <div class="stage" id="stage" tabindex="0">
+            <p class="stage-empty" id="stage-empty">Add a source. Drag to move. Pinch or resize from the corner.</p>
+          </div>
+        </div>
+
+        <aside class="side">
+          <div class="live-row">
+            <button type="button" class="btn-rec" id="btn-live" aria-pressed="false">
+              <span class="rec-mark"></span>
+              <span id="live-action">Go live</span>
+            </button>
+            <span class="stat-v" id="stat-uptime">00:00:00</span>
+            <span class="stat-v quiet" id="stat-kbps">0 kbps</span>
+            <span class="hidden" id="stat-seg">seg 0</span>
+          </div>
+          <div class="ticks hidden" id="ticks" aria-hidden="true"></div>
+          <p class="status-line" id="status-line"></p>
+          <div class="desk">
+            <label class="field">
+              <span>frame</span>
+              <select id="res-select">
+                <option value="854x480">480p</option>
+                <option value="1280x720" selected>720p</option>
+                <option value="1920x1080">1080p</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>quality</span>
+              <select id="quality-select">
+                <option value="low">low · 1.2 Mbps</option>
+                <option value="med" selected>medium · 2.8 Mbps</option>
+                <option value="high">high · 5 Mbps</option>
+              </select>
+            </label>
+            <button type="button" class="btn-text" id="btn-clear-scene">Clear</button>
+          </div>
+          <section class="dock-sources">
+            <p class="palette-k">Add</p>
+            <div class="sources-row" id="palette">
+              <button type="button" class="chip" draggable="true" data-add="camera">Camera</button>
+              <button type="button" class="chip" draggable="true" data-add="mic">Mic</button>
+              <button type="button" class="chip" draggable="true" data-add="image">Photo</button>
+              <button type="button" class="chip" draggable="true" data-add="video">Video</button>
+              <button type="button" class="chip" draggable="true" data-add="screen">Share</button>
+              <button type="button" class="chip" draggable="true" data-add="text">Text</button>
+              <button type="button" class="chip" draggable="true" data-add="countdown">Countdown</button>
+              <button type="button" class="chip chip-widget" draggable="true" data-add="html">Custom Widget</button>
+              <button type="button" class="chip" draggable="true" data-add="color">Color</button>
+              <button type="button" class="chip quiet" draggable="true" data-add="iframe">Iframe</button>
+            </div>
+          </section>
+          <section class="dock-elements">
+            <p class="palette-k">On canvas</p>
+            <ul class="element-list" id="element-list"></ul>
+            <p class="live-empty" id="element-empty">Nothing yet.</p>
+          </section>
+          <section class="inspector" id="inspector">
+            <p class="palette-k">Edit</p>
+            <div id="inspector-body"><p class="live-empty">Tap a layer.</p></div>
+          </section>
+        </aside>
+      </div>
+
+      <input id="file-image" type="file" accept="image/*" hidden>
+      <input id="file-video" type="file" accept="video/*" hidden>
+    </section>
+
+    <div id="widget-market" class="market hidden" hidden>
+      <div class="market-card">
+        <header class="market-head">
+          <div>
+            <h2>Custom Widget</h2>
+            <p>Forever Widgets — tap one to add it</p>
+          </div>
+          <button type="button" class="market-x" id="market-close" aria-label="Close">×</button>
+        </header>
+        <div class="market-body">
+          <nav class="market-nav" id="market-nav"></nav>
+          <div class="market-grid" id="market-grid"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="widgets/catalog.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
